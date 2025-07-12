@@ -43,8 +43,8 @@ def build_dataset(window_size=60, batch_size=32, flag=0):
 
     # Xử lý giá trị thiếu
     data.replace('?', np.nan, inplace=True)
-    data = data.astype(float)  # <- Ép toàn bộ các cột về float
-    data.fillna(data.mean(), inplace=True)
+    data.iloc[:, 1:] = data.iloc[:, 1:].astype(float)
+    data.fillna(data.mean(numeric_only=True), inplace=True)
     
     print("Missing values:\n", data.isna().sum())
     print("Dtypes:\n", data.dtypes)
