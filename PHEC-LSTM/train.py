@@ -24,12 +24,9 @@ logging.basicConfig(
     ]
 )
 
-def train_lstm(dataset, num_epochs=50):
+def train_lstm(model, device, dataset, num_epochs=50):
     logging.info("🚀 Khởi tạo mô hình LSTM...")
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     logging.info(f"📦 Sử dụng thiết bị: {device}")
-
-    model = LSTMModel(input_size=7, hidden_size=50, num_layers=1).to(device)
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     scaler = GradScaler()
@@ -95,6 +92,7 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description="Huấn luyện mô hình LSTM")
 
+    parser.add_argument('--eval_only', type=bool, default=False, help='Train or Eval')
     parser.add_argument('--batch_size', type=int, default=128, help='Batch size cho DataLoader')
     parser.add_argument('--epochs', type=int, default=50, help='Số lượng epochs huấn luyện')
     parser.add_argument('--window_size', type=int, default=60, help='Kích thước cửa sổ chuỗi thời gian')
@@ -107,14 +105,15 @@ if __name__ == "__main__":
     print(f"📦 Tham số nhận được: batch_size={args.batch_size}, epochs={args.epochs}, window_size={args.window_size}, use_amp={args.use_amp}")
 
     logging.info("🏁 Bắt đầu huấn luyện LSTM...")
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = LSTMModel(input_size=7, hidden_size=50, num_layers=1).to(device)
     dataset = build_dataset(window_size=args.window_size, batch_size=args.batch_size, num_workers=2, pin_memory=True)
-    model = train_lstm(dataset, num_epochs=args.epochs)
+    if not args.eval_only:
+        train_lstm(model, device, dataset, num_epochs=args.epochs)
     logging.info("✅ Huấn luyện kết thúc.")
 
     if os.path.exists(MODEL_PATH):
         logging.info("📥 Tải mô hình đã lưu...")
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        model = LSTMModel(input_size=7, hidden_size=50, num_layers=1).to(device)
         model.load_state_dict(torch.load(MODEL_PATH))
         logging.info("🧪 Đánh giá mô hình...")
         build_eval(model, device, dataset[2])
