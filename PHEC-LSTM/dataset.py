@@ -42,8 +42,12 @@ def build_dataset(window_size=60, batch_size=32, flag=0):
     data = data[['datetime', 'Global_active_power', 'Global_reactive_power', 'Voltage', 'Global_intensity', 'Sub_metering_1', 'Sub_metering_2', 'Sub_metering_3']]
 
     # Xử lý giá trị thiếu
-    data = data.replace('?', np.nan)
-    data = data.fillna(data.mean(numeric_only=True))
+    data.replace('?', np.nan, inplace=True)
+    data = data.astype(float)  # <- Ép toàn bộ các cột về float
+    data.fillna(data.mean(), inplace=True)
+    
+    print("Missing values:\n", data.isna().sum())
+    print("Dtypes:\n", data.dtypes)
 
     # Chuẩn hóa dữ liệu
     scaler = MinMaxScaler()
