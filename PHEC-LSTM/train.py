@@ -3,7 +3,7 @@ import torch.optim as optim
 from model import LSTMModel
 from dataset import build_dataset
 from evaluation import build_eval
- import torch.nn as nn
+import torch.nn as nn
 MODEL_PATH = 'ltsm.pth'
 
 def train_ltsm():
