@@ -6,7 +6,7 @@ from evaluation import build_eval
 import torch.nn as nn
 MODEL_PATH = 'ltsm.pth'
 
-def train_ltsm():
+def train_ltsm(model):
 
     criterion = nn.MSELoss()  # Thử nghiệm với nn.L1Loss() cho MAE
     optimizer = optim.Adam(model.parameters(), lr=0.001)  # Thử nghiệm với RMSprop, SGD
@@ -57,7 +57,7 @@ def train_ltsm():
 
 if __name__ == "__main__":
     print("Bắt đầu huấn luyện LTSM...")
-    train_ltsm()
+    train_ltsm(model)
 
     print("Kết thúc huấn luyện LTSM...")
     print("Load mô hình LTSM...")
