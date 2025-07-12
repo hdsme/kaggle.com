@@ -99,6 +99,7 @@ if __name__ == "__main__":
 
     if os.path.exists(MODEL_PATH):
         logging.info("📥 Tải mô hình đã lưu...")
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         model = LSTMModel(input_size=7, hidden_size=50, num_layers=1).to(device)
         model.load_state_dict(torch.load(MODEL_PATH))
         logging.info("🧪 Đánh giá mô hình...")
