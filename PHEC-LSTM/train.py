@@ -7,7 +7,8 @@ from evaluation import build_eval
 import logging
 import os
 import time
-
+import pickle
+from plot import plot_loss
 # AMP cho mixed precision
 from torch.amp import autocast, GradScaler
 
@@ -37,7 +38,8 @@ def train_lstm(model, device, dataset, num_epochs=50):
 
     # Load dataset
     train_loader, val_loader, test_loader = dataset
-
+    train_losses_all = []
+    val_losses_all = []
     for epoch in range(num_epochs):
         start_time = time.time()
         model.train()
@@ -73,6 +75,8 @@ def train_lstm(model, device, dataset, num_epochs=50):
         epoch_time = time.time() - start_time
         logging.info(f'Epoch {epoch+1}/{num_epochs} | ⏱️ {epoch_time:.2f}s | 📉 Train Loss: {train_loss:.6f} | 🧪 Val Loss: {val_loss:.6f}')
 
+        train_losses_all.append(train_loss)
+        val_losses_all.append(val_loss)
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             counter = 0
@@ -84,7 +88,9 @@ def train_lstm(model, device, dataset, num_epochs=50):
             if counter >= patience:
                 logging.info("⛔ Dừng sớm do không cải thiện.")
                 break
-
+    
+    with open('loss_histories.pkl', 'wb') as f:
+        pickle.dump({'train_loss': train_losses_all, 'val_loss': val_losses_all}, f)
     return model
 
 import argparse
@@ -93,6 +99,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Huấn luyện mô hình LSTM")
 
     parser.add_argument('--eval_only', type=bool, default=False, help='Train or Eval')
+    parser.add_argument('--hidden_size', type=int, default=50, help='Hidden size cho Model')
     parser.add_argument('--batch_size', type=int, default=128, help='Batch size cho DataLoader')
     parser.add_argument('--epochs', type=int, default=50, help='Số lượng epochs huấn luyện')
     parser.add_argument('--window_size', type=int, default=60, help='Kích thước cửa sổ chuỗi thời gian')
@@ -102,11 +109,11 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    print(f"📦 Tham số nhận được: batch_size={args.batch_size}, epochs={args.epochs}, window_size={args.window_size}, use_amp={args.use_amp}")
+    print(f"📦 Tham số nhận được: batch_size={args.batch_size}, epochs={args.epochs}, window_size={args.window_size}")
 
     logging.info("🏁 Bắt đầu huấn luyện LSTM...")
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = LSTMModel(input_size=7, hidden_size=50, num_layers=1).to(device)
+    model = LSTMModel(input_size=7, hidden_size=args.hidden_size, num_layers=1).to(device)
     dataset = build_dataset(window_size=args.window_size, batch_size=args.batch_size, num_workers=2, pin_memory=True)
     if not args.eval_only:
         train_lstm(model, device, dataset, num_epochs=args.epochs)
@@ -119,3 +126,5 @@ if __name__ == "__main__":
         build_eval(model, device, dataset[2])
     else:
         logging.error("❌ Không tìm thấy mô hình đã lưu!")
+
+    plot_loss()
