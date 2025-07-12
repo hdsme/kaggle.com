@@ -94,7 +94,7 @@ def train_lstm():
 
 if __name__ == "__main__":
     logging.info("🏁 Bắt đầu huấn luyện LSTM...")
-    model = train_lstm()
+    # model = train_lstm()
     logging.info("✅ Huấn luyện kết thúc.")
 
     if os.path.exists(MODEL_PATH):
