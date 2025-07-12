@@ -24,7 +24,7 @@ logging.basicConfig(
     ]
 )
 
-def train_lstm():
+def train_lstm(dataset, num_epochs=50):
     logging.info("🚀 Khởi tạo mô hình LSTM...")
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     logging.info(f"📦 Sử dụng thiết bị: {device}")
@@ -37,10 +37,9 @@ def train_lstm():
     patience = 10
     best_val_loss = float('inf')
     counter = 0
-    num_epochs = 50
 
     # Load dataset
-    train_loader, val_loader, test_loader = build_dataset(batch_size=128, num_workers=2, pin_memory=True)
+    train_loader, val_loader, test_loader = dataset
 
     for epoch in range(num_epochs):
         start_time = time.time()
@@ -91,10 +90,25 @@ def train_lstm():
 
     return model
 
+import argparse
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Huấn luyện mô hình LSTM")
+
+    parser.add_argument('--batch_size', type=int, default=128, help='Batch size cho DataLoader')
+    parser.add_argument('--epochs', type=int, default=50, help='Số lượng epochs huấn luyện')
+    parser.add_argument('--window_size', type=int, default=60, help='Kích thước cửa sổ chuỗi thời gian')
+
+    return parser.parse_args()
+    
 
 if __name__ == "__main__":
+    args = parse_args()
+    print(f"📦 Tham số nhận được: batch_size={args.batch_size}, epochs={args.epochs}, window_size={args.window_size}, use_amp={args.use_amp}")
+
     logging.info("🏁 Bắt đầu huấn luyện LSTM...")
-    # model = train_lstm()
+    dataset = build_dataset(window_size=args.window_size, batch_size=args.batch_size, num_workers=2, pin_memory=True)
+    model = train_lstm(dataset, num_epochs=args.epochs)
     logging.info("✅ Huấn luyện kết thúc.")
 
     if os.path.exists(MODEL_PATH):
@@ -103,6 +117,6 @@ if __name__ == "__main__":
         model = LSTMModel(input_size=7, hidden_size=50, num_layers=1).to(device)
         model.load_state_dict(torch.load(MODEL_PATH))
         logging.info("🧪 Đánh giá mô hình...")
-        build_eval(model,device)
+        build_eval(model, device, dataset[2])
     else:
         logging.error("❌ Không tìm thấy mô hình đã lưu!")

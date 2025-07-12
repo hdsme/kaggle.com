@@ -4,8 +4,7 @@ import matplotlib.pyplot as plt
 import torch
 from dataset import build_dataset
 import joblib
-def build_eval(model, device):
-    train_loader, val_loader, test_loader = build_dataset(batch_size=128, num_workers=2, pin_memory=True)
+def build_eval(model, device, test_loader):
     scaler = joblib.load('scaler.save')
     # Đánh giá mô hình
     model.eval()
