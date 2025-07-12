@@ -52,9 +52,26 @@ def build_dataset(window_size=60, batch_size=32, flag=0):
                  'Global_intensity', 'Sub_metering_1', 'Sub_metering_2', 'Sub_metering_3']]
 
     # Xử lý thiếu
+    # Thay thế '?' thành NaN rõ ràng
     data.replace('?', np.nan, inplace=True)
-    data.iloc[:, 1:] = data.iloc[:, 1:].astype(float)  # bỏ datetime
+
+    # Ép từng cột sang float, báo lỗi nếu thất bại
+    for col in data.columns[1:]:
+        try:
+            data[col] = data[col].astype(float)
+        except ValueError:
+            print(f"⚠️ Lỗi khi chuyển cột {col} sang float")
+            print(data[col].unique())
+
+    # In số lượng NaN trước khi fill
+    print("NaN trước khi fill:\n", data.isna().sum())
+
+    # Điền giá trị thiếu
     data.fillna(data.mean(numeric_only=True), inplace=True)
+
+    # Kiểm tra lại
+    print("NaN sau khi fill:\n", data.isna().sum())
+    assert not data.isnull().values.any(), "❌ Vẫn còn NaN trong dữ liệu!"
 
     # Kiểm tra lại
     assert not data.isnull().values.any(), "❌ Vẫn còn NaN trong dữ liệu!"
