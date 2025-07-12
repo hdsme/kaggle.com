@@ -36,39 +36,51 @@ def build_dataset(window_size=60, batch_size=32, flag=0):
     flag = 0 -> singlestep
     flag = 1 -> multistep
     """
-    dataset = download_dataset()
+    dataset_path = download_dataset()
+
     # Đọc dữ liệu
-    data = pd.read_csv(f'{dataset}/household_power_consumption.txt', sep=';', parse_dates={'datetime': ['Date', 'Time']}, infer_datetime_format=True, low_memory=False)
-    data = data[['datetime', 'Global_active_power', 'Global_reactive_power', 'Voltage', 'Global_intensity', 'Sub_metering_1', 'Sub_metering_2', 'Sub_metering_3']]
+    data = pd.read_csv(
+        f'{dataset_path}/household_power_consumption.txt',
+        sep=';',
+        parse_dates={'datetime': ['Date', 'Time']},
+        low_memory=False,
+        dayfirst=True  # ⚠️ Quan trọng vì dữ liệu dạng dd/mm/yyyy
+    )
 
-    # Xử lý giá trị thiếu
+    # Lọc cột cần thiết
+    data = data[['datetime', 'Global_active_power', 'Global_reactive_power', 'Voltage',
+                 'Global_intensity', 'Sub_metering_1', 'Sub_metering_2', 'Sub_metering_3']]
+
+    # Xử lý thiếu
     data.replace('?', np.nan, inplace=True)
-    data.iloc[:, 1:] = data.iloc[:, 1:].astype(float)
+    data.iloc[:, 1:] = data.iloc[:, 1:].astype(float)  # bỏ datetime
     data.fillna(data.mean(numeric_only=True), inplace=True)
-    
-    print("Missing values:\n", data.isna().sum())
-    print("Dtypes:\n", data.dtypes)
 
-    # Chuẩn hóa dữ liệu
+    # Kiểm tra lại
+    assert not data.isnull().values.any(), "❌ Vẫn còn NaN trong dữ liệu!"
+    print("✅ Dữ liệu sạch. Không còn NaN.")
+
+    # Chuẩn hóa dữ liệu (bỏ datetime)
     scaler = MinMaxScaler()
     scaled_data = scaler.fit_transform(data.iloc[:, 1:])
-    features = ['Global_active_power', 'Global_reactive_power', 'Voltage', 'Global_intensity', 'Sub_metering_1', 'Sub_metering_2', 'Sub_metering_3']
-    scaled_df = pd.DataFrame(scaled_data, columns=features)
+    scaled_df = pd.DataFrame(scaled_data, columns=data.columns[1:])
 
-    # Tạo dữ liệu
-    window_size = 60  # Thử nghiệm với 30, 60, 120
+    # Tạo dataset
     dataset = TimeSeriesDataset(scaled_df.values, window_size)
 
-    # Chia dữ liệu
+    # Chia tập train/val/test
     train_size = int(len(dataset) * 0.7)
     val_size = int(len(dataset) * 0.2)
     test_size = len(dataset) - train_size - val_size
-    train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, val_size, test_size])
+
+    train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(
+        dataset, [train_size, val_size, test_size]
+    )
 
     # Tạo DataLoader
-    batch_size = 32  # Thử nghiệm với 16, 32, 64
-    train = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
-    test = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
-    return train, val, test
+    return train_loader, val_loader, test_loader
+
