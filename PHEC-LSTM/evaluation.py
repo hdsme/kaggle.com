@@ -1,10 +1,12 @@
 import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error
+from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 import torch
 from dataset import build_dataset
 
 def build_eval(model, device):
+    scaler = MinMaxScaler()
     train_loader, val_loader, test_loader = build_dataset(batch_size=128, num_workers=2, pin_memory=True)
     # Đánh giá mô hình
     model.eval()
