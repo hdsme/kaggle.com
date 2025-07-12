@@ -8,8 +8,11 @@ MODEL_PATH = 'ltsm.pth'
 
 def train_ltsm():
     model = LSTMModel(input_size=7, hidden_size=50, num_layers=1)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = model.to(device)
     criterion = nn.MSELoss()  # Thử nghiệm với nn.L1Loss() cho MAE
     optimizer = optim.Adam(model.parameters(), lr=0.001)  # Thử nghiệm với RMSprop, SGD
+
     # Early Stopping
     patience = 10
     best_val_loss = float('inf')
