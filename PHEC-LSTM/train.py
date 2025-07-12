@@ -42,8 +42,8 @@ def train_ltsm():
         model.train()
         train_loss = 0
         for X_batch, y_batch in train:
-            print("Sample X:", X_batch[0])
-            print("Sample y:", y_batch[0])
+            # print("Sample X:", X_batch[0])
+            # print("Sample y:", y_batch[0])
             X_batch, y_batch = X_batch.to(device), y_batch.to(device)
             optimizer.zero_grad()
             outputs = model(X_batch)
