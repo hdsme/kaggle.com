@@ -103,6 +103,6 @@ if __name__ == "__main__":
         model = LSTMModel(input_size=7, hidden_size=50, num_layers=1).to(device)
         model.load_state_dict(torch.load(MODEL_PATH))
         logging.info("🧪 Đánh giá mô hình...")
-        build_eval(model)
+        build_eval(model,device)
     else:
         logging.error("❌ Không tìm thấy mô hình đã lưu!")
