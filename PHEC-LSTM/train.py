@@ -26,9 +26,9 @@ logging.basicConfig(
 )
 
 def train_lstm(window_size, batch_size, hidden_size, opt_name='Adam', loss_name = 'MSE', num_epochs=50):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     logging.info("🚀 Khởi tạo mô hình LSTM...")
     logging.info(f"📦 Sử dụng thiết bị: {device}")
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = LSTMModel(input_size=7, hidden_size=hidden_size, num_layers=1).to(device)
     optimizers = {'Adam': optim.Adam, 'RMSprop': optim.RMSprop, 'SGD': optim.SGD}
     losses = {'MSE': nn.MSELoss, 'MAE': nn.L1Loss}
