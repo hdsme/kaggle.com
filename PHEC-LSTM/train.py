@@ -141,7 +141,6 @@ if __name__ == "__main__":
             print(f"\n🌐 Đang xử lý batch_size={batch_size}")
             for hidden_size in hidden_sizes:
                 print(f"\n🌐 Đang xử lý hidden_size={hidden_size}")
-                train_loader, val_loader, test_loader = build_dataset(window_size=window_size, batch_size=batch_size, num_workers=2, pin_memory=True)
                 for opt_name, opt_class in optimizers.items():
                     print(f"\n🌐 Đang xử lý opt_name={opt_name}")
                     for loss_name, loss_class in losses.items():
