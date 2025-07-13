@@ -9,8 +9,9 @@ import pandas as pd
 import pickle
 from model import LSTMModel
 from dataset import build_dataset
-
+import time
 import joblib
+import matplotlib.pyplot as plt
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Danh sách hyperparameter để thử nghiệm
@@ -47,6 +48,7 @@ for window_size in window_sizes:
                         best_model_path = f'model_{window_size}_{batch_size}_{hidden_size}_{opt_name}_{loss_name}.pth'
 
                         for epoch in range(num_epochs):
+                            start_time = time.time()
                             model.train()
                             train_loss = 0.0
                             for X_batch, y_batch in train_loader:
@@ -70,17 +72,31 @@ for window_size in window_sizes:
                                     val_loss += criterion(outputs.view(-1), y_batch).item()
                             val_loss /= len(val_loader)
                             val_losses.append(val_loss)
+                            epoch_time = time.time() - start_time
+                            print(f'Epoch {epoch+1}/{num_epochs} | ⏱️ {epoch_time:.2f}s | 📉 Train Loss: {train_loss:.6f} | 🧪 Val Loss: {val_loss:.6f}')
 
                             # Early stopping
                             if val_loss < best_val_loss:
                                 best_val_loss = val_loss
                                 counter = 0
                                 torch.save(model.state_dict(), best_model_path)
+                                print(f'✅ Đã lưu mô hình tốt nhất tại epoch {epoch+1} (val_loss={val_loss:.6f})')
                             else:
                                 counter += 1
+                                logging.info(f'⏸ Không cải thiện. EarlyStopping: {counter}/10')
                                 if counter >= 10:
+                                    logging.info("⛔ Dừng sớm do không cải thiện.")
                                     break
 
+                        plt.figure(figsize=(10, 5))
+                        plt.plot(train_losses, label='Train Loss')
+                        plt.plot(val_losses, label='Validation Loss')
+                        plt.xlabel('Epoch')
+                        plt.ylabel('Loss (MSE)')
+                        plt.title('Training and Validation Loss')
+                        plt.legend()
+                        plt.savefig(f'loss_plot_{window_size}_{batch_size}_{hidden_size}_{opt_name}_{loss_name}.png')
+                        plt.show()
                         # Đánh giá trên tập test
                         model.load_state_dict(torch.load(best_model_path))
                         model.eval()
@@ -106,7 +122,18 @@ for window_size in window_sizes:
                         mae = mean_absolute_error(y_true_inv, y_pred_inv)
                         rmse = np.sqrt(mean_squared_error(y_true_inv, y_pred_inv))
                         mape = np.mean(np.abs((y_true_inv - y_pred_inv) / (y_true_inv + 1e-10))) * 100
-
+                        print(f'Test MAE: {mae:.4f}')
+                        print(f'Test RMSE: {rmse:.4f}')
+                        print(f'Test MAPE: {mape:.4f}%')
+                        plt.figure(figsize=(15, 5))
+                        plt.plot(y_true_inv[:200], label='Actual')
+                        plt.plot(y_pred_inv[:200], label='Predicted')
+                        plt.xlabel('Time')
+                        plt.ylabel('Global_active_power (kW)')
+                        plt.title('Actual vs Predicted Global_active_power')
+                        plt.legend()
+                        plt.savefig(f'prediction_plot_{window_size}_{batch_size}_{hidden_size}_{opt_name}_{loss_name}.png')
+                        plt.show()
                         results.append({
                             'window_size': window_size,
                             'batch_size': batch_size,
@@ -118,6 +145,7 @@ for window_size in window_sizes:
                             'rmse': rmse,
                             'mape': mape
                         })
+                        print(results)
 
 # Lưu kết quả
 with open('hyperparameter_results.pkl', 'wb') as f:
