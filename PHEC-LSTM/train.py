@@ -32,7 +32,7 @@ def train_lstm(window_size, batch_size, hidden_size, opt_name='Adam', loss_name 
     model = LSTMModel(input_size=7, hidden_size=hidden_size, num_layers=1).to(device)
     optimizers = {'Adam': optim.Adam, 'RMSprop': optim.RMSprop, 'SGD': optim.SGD}
     losses = {'MSE': nn.MSELoss, 'MAE': nn.L1Loss}
-    criterion = losses[loss_name]
+    criterion = losses[loss_name]()
     optimizer = optimizers[opt_name](model.parameters(), lr=0.001)
     scaler = GradScaler()
     unique_id = f"{window_size}_{batch_size}_{hidden_size}_{opt_name}_{loss_name}"
