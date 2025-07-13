@@ -2,10 +2,11 @@ import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 import matplotlib.pyplot as plt
 import torch
-from dataset import build_dataset
 import joblib
-def build_eval(model, device, test_loader):
-    scaler = joblib.load('scaler.save')
+import json
+def build_eval(model, test_loader, unique_id):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    scaler = joblib.load(f'scaler_{unique_id}.save')
     # Đánh giá mô hình
     model.eval()
     y_true, y_pred = [], []
@@ -30,14 +31,22 @@ def build_eval(model, device, test_loader):
     print(f'Test MAE: {mae:.4f}')
     print(f'Test RMSE: {rmse:.4f}')
     print(f'Test MAPE: {mape:.4f}%')
-
+    metrics = {
+        "MAE": round(mae, 4),
+        "RMSE": round(rmse, 4),
+        "MAPE": round(mape, 4)
+    }
+    with open(f'metrics_{unique_id}.json', 'w') as f:
+        json.dump(metrics, f, indent=4)
     # Vẽ so sánh dự đoán và thực tế
     plt.figure(figsize=(15, 5))
     plt.plot(y_true_inv[:200], label='Actual')
     plt.plot(y_pred_inv[:200], label='Predicted')
     plt.xlabel('Time')
-    plt.ylabel('Global_active_power (kW)')
-    plt.title('Actual vs Predicted Global_active_power')
+    plt.ylabel('Power (kW)')
+    plt.title('Actual vs Predicted')
     plt.legend()
-    plt.savefig('prediction_plot.png')
+    plt.savefig(f'prediction_plot_{unique_id}.png')
     plt.show()
+
+    return metrics

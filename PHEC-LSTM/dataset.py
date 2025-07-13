@@ -7,6 +7,7 @@ import os
 import zipfile
 import requests
 import io
+import joblib
 
 class TimeSeriesDataset(Dataset):
     def __init__(self, data, window_size):
@@ -39,7 +40,7 @@ def download_dataset():
 
     return os.path.abspath(local_dir)
 
-def build_dataset(window_size=60, batch_size=64, num_workers=2, pin_memory=True):
+def build_dataset(unique_id, window_size=60, batch_size=64, num_workers=2, pin_memory=True):
     dataset_path = download_dataset()
 
     print("🔁 Đọc dữ liệu gốc...")
@@ -92,6 +93,6 @@ def build_dataset(window_size=60, batch_size=64, num_workers=2, pin_memory=True)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False,
                              num_workers=num_workers, pin_memory=pin_memory)
 
-    import joblib
-    joblib.dump(scaler, f'scaler_{window_size}_{batch_size}.save')
+
+    joblib.dump(scaler, f'scaler_{unique_id}.save')
     return train_loader, val_loader, test_loader

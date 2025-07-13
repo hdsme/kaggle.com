@@ -3,8 +3,8 @@ import pickle
 import numpy as np
 
 
-def plot_loss():
-    with open('loss_histories.pkl', 'rb') as f:
+def plot_loss(unique_id, loss_name):
+    with open(f'loss_histories_{unique_id}.pkl', 'rb') as f:
         loss_history = pickle.load(f)
 
     train_losses = loss_history['train_loss']
@@ -15,8 +15,8 @@ def plot_loss():
     plt.plot(train_losses, label='Train Loss')
     plt.plot(val_losses, label='Validation Loss')
     plt.xlabel('Epoch')
-    plt.ylabel('Loss (MSE)')
+    plt.ylabel(f'Loss ({loss_name})')
     plt.title('Training and Validation Loss')
     plt.legend()
-    plt.savefig('loss_plot.png')
+    plt.savefig(f'loss_plot_{unique_id}.png')
     plt.show()
