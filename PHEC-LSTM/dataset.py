@@ -93,5 +93,5 @@ def build_dataset(window_size=60, batch_size=64, num_workers=2, pin_memory=True)
                              num_workers=num_workers, pin_memory=pin_memory)
 
     import joblib
-    joblib.dump(scaler, 'scaler.save')
+    joblib.dump(scaler, f'scaler_{window_size}_{batch_size}.save')
     return train_loader, val_loader, test_loader

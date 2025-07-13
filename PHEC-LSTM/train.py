@@ -99,6 +99,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Huấn luyện mô hình LSTM")
 
     parser.add_argument('--eval_only', type=bool, default=False, help='Train or Eval')
+    parser.add_argument('--tune', type=bool, default=False, help='Train or Eval')
     parser.add_argument('--hidden_size', type=int, default=50, help='Hidden size cho Model')
     parser.add_argument('--batch_size', type=int, default=128, help='Batch size cho DataLoader')
     parser.add_argument('--epochs', type=int, default=50, help='Số lượng epochs huấn luyện')
@@ -111,20 +112,21 @@ if __name__ == "__main__":
     args = parse_args()
     print(f"📦 Tham số nhận được: batch_size={args.batch_size}, epochs={args.epochs}, window_size={args.window_size}")
 
-    logging.info("🏁 Bắt đầu huấn luyện LSTM...")
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = LSTMModel(input_size=7, hidden_size=args.hidden_size, num_layers=1).to(device)
-    dataset = build_dataset(window_size=args.window_size, batch_size=args.batch_size, num_workers=2, pin_memory=True)
-    if not args.eval_only:
-        train_lstm(model, device, dataset, num_epochs=args.epochs)
-    logging.info("✅ Huấn luyện kết thúc.")
+    if not args.tune:
+        logging.info("🏁 Bắt đầu huấn luyện LSTM...")
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        model = LSTMModel(input_size=7, hidden_size=args.hidden_size, num_layers=1).to(device)
+        dataset = build_dataset(window_size=args.window_size, batch_size=args.batch_size, num_workers=2, pin_memory=True)
+        if not args.eval_only:
+            train_lstm(model, device, dataset, num_epochs=args.epochs)
+        logging.info("✅ Huấn luyện kết thúc.")
 
-    if os.path.exists(MODEL_PATH):
-        logging.info("📥 Tải mô hình đã lưu...")
-        model.load_state_dict(torch.load(MODEL_PATH))
-        logging.info("🧪 Đánh giá mô hình...")
-        build_eval(model, device, dataset[2])
+        if os.path.exists(MODEL_PATH):
+            logging.info("📥 Tải mô hình đã lưu...")
+            model.load_state_dict(torch.load(MODEL_PATH))
+            logging.info("🧪 Đánh giá mô hình...")
+            build_eval(model, device, dataset[2])
+        else:
+            logging.error("❌ Không tìm thấy mô hình đã lưu!")
     else:
-        logging.error("❌ Không tìm thấy mô hình đã lưu!")
-
-    plot_loss()
+        logging.info("🏁 Bắt đầu tune LSTM...")
