@@ -19,7 +19,7 @@ hidden_sizes = [32, 50, 100]
 batch_sizes = [16, 32, 64]
 optimizers = {'Adam': optim.Adam, 'RMSprop': optim.RMSprop, 'SGD': optim.SGD}
 losses = {'MSE': nn.MSELoss, 'MAE': nn.L1Loss}
-num_epochs_list = [20, 50, 100]
+num_epochs_list = [1, 20, 50, 100]
 
 results = []
 
