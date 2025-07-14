@@ -35,7 +35,7 @@ def train_lstm(window_size, batch_size, hidden_size, opt_name='Adam', loss_name 
     criterion = losses[loss_name]()
     optimizer = optimizers[opt_name](model.parameters(), lr=0.001)
     scaler = GradScaler()
-    unique_id = f"{window_size}_{batch_size}_{hidden_size}_{opt_name}_{loss_name}"
+    unique_id = f"{window_size}_{batch_size}_{hidden_size}_{opt_name}_{loss_name}_{num_epochs}"
     model_path = f'model_{unique_id}.pth'
     patience = 10
     best_val_loss = float('inf')
