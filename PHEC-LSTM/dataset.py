@@ -22,6 +22,20 @@ class TimeSeriesDataset(Dataset):
         y = self.data[idx + self.window_size, 0]  # chỉ dự đoán Global_active_power
         return torch.tensor(X, dtype=torch.float32), torch.tensor(y, dtype=torch.float32)
 
+class MultiStepDataset(Dataset):
+    def __init__(self, data, window_size, forecast_steps=3):
+        self.data = data
+        self.window_size = window_size
+        self.forecast_steps = forecast_steps
+
+    def __len__(self):
+        return len(self.data) - self.window_size - self.forecast_steps + 1
+
+    def __getitem__(self, idx):
+        X = self.data[idx:idx + self.window_size]
+        y = self.data[idx + self.window_size:idx + self.window_size + self.forecast_steps, 0]
+        return torch.tensor(X, dtype=torch.float32), torch.tensor(y, dtype=torch.float32)
+    
 def download_dataset():
     url = "https://archive.ics.uci.edu/static/public/235/individual+household+electric+power+consumption.zip"
     local_dir = "datasets"

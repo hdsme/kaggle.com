@@ -116,40 +116,49 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Huấn luyện mô hình LSTM")
+    parser.add_argument('--config', type=str, nargs=6, help='window_size batch_size hidden_size opt_name loss_name num_epochs')
 
-    parser.add_argument('--eval_only', type=bool, default=False, help='Train or Eval')
-    parser.add_argument('--tune', type=bool, default=False, help='Train or Eval')
-    parser.add_argument('--hidden_size', type=int, default=50, help='Hidden size cho Model')
-    parser.add_argument('--batch_size', type=int, default=128, help='Batch size cho DataLoader')
-    parser.add_argument('--epochs', type=int, default=50, help='Số lượng epochs huấn luyện')
-    parser.add_argument('--window_size', type=int, default=60, help='Kích thước cửa sổ chuỗi thời gian')
+
+    # parser.add_argument('--eval_only', type=bool, default=False, help='Train or Eval')
+    # parser.add_argument('--tune', type=bool, default=False, help='Train or Eval')
+    # parser.add_argument('--hidden_size', type=int, default=50, help='Hidden size cho Model')
+    # parser.add_argument('--batch_size', type=int, default=128, help='Batch size cho DataLoader')
+    # parser.add_argument('--epochs', type=int, default=50, help='Số lượng epochs huấn luyện')
+    # parser.add_argument('--window_size', type=int, default=60, help='Kích thước cửa sổ chuỗi thời gian')
 
     return parser.parse_args()
     
 
 if __name__ == "__main__":
-    window_sizes = [30, 60, 120]
-    hidden_sizes = [32, 50, 100]
-    batch_sizes = [16, 32, 64]
-    optimizers = {'Adam': optim.Adam, 'RMSprop': optim.RMSprop, 'SGD': optim.SGD}
-    losses = {'MSE': nn.MSELoss, 'MAE': nn.L1Loss}
-    num_epochs_list = [1, 10, 20, 50]
+    # window_sizes = [30, 60, 120]
+    # hidden_sizes = [32, 50, 100]
+    # batch_sizes = [16, 32, 64]
+    # optimizers = {'Adam': optim.Adam, 'RMSprop': optim.RMSprop, 'SGD': optim.SGD}
+    # losses = {'MSE': nn.MSELoss, 'MAE': nn.L1Loss}
+    # num_epochs_list = [1, 10, 20, 50]
 
-    for window_size in window_sizes:
-        print(f"\n🌐 Đang xử lý window_size={window_size}")
-        for batch_size in batch_sizes:
-            print(f"\n🌐 Đang xử lý batch_size={batch_size}")
-            for hidden_size in hidden_sizes:
-                print(f"\n🌐 Đang xử lý hidden_size={hidden_size}")
-                for opt_name, opt_class in optimizers.items():
-                    print(f"\n🌐 Đang xử lý opt_name={opt_name}")
-                    for loss_name, loss_class in losses.items():
-                        print(f"\n🌐 Đang xử lý loss_name={loss_name}")
-                        for num_epochs in num_epochs_list:
-                            train_lstm(window_size, batch_size, hidden_size, opt_name, loss_name, num_epochs)
-    # args = parse_args()
-    # print(f"📦 Tham số nhận được: batch_size={args.batch_size}, epochs={args.epochs}, window_size={args.window_size}")
+    # for window_size in window_sizes:
+    #     print(f"\n🌐 Đang xử lý window_size={window_size}")
+    #     for batch_size in batch_sizes:
+    #         print(f"\n🌐 Đang xử lý batch_size={batch_size}")
+    #         for hidden_size in hidden_sizes:
+    #             print(f"\n🌐 Đang xử lý hidden_size={hidden_size}")
+    #             for opt_name, opt_class in optimizers.items():
+    #                 print(f"\n🌐 Đang xử lý opt_name={opt_name}")
+    #                 for loss_name, loss_class in losses.items():
+    #                     print(f"\n🌐 Đang xử lý loss_name={loss_name}")
+    #                     for num_epochs in num_epochs_list:
+    #                         train_lstm(window_size, batch_size, hidden_size, opt_name, loss_name, num_epochs)
+    args = parse_args()
+    window_size = int(args.config[0])
+    batch_size = int(args.config[1])
+    hidden_size = int(args.config[2])
+    opt_name = args.config[3]
+    loss_name = args.config[4]
+    num_epochs = int(args.config[5])
 
+    print(f"📦 Tham số nhận được: batch_size={batch_size}, epochs={num_epochs}, window_size={window_size}")
+    train_lstm(window_size, batch_size, hidden_size, opt_name, loss_name, num_epochs)
     # if not args.tune:
     #     logging.info("🏁 Bắt đầu huấn luyện LSTM...")
     #     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
