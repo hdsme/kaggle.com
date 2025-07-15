@@ -54,7 +54,7 @@ def download_dataset():
 
     return os.path.abspath(local_dir)
 
-def build_dataset(unique_id, window_size=60, batch_size=64, num_workers=2, pin_memory=True):
+def build_dataset(unique_id, window_size=60, batch_size=64, num_workers=2, pin_memory=True, multi_step=False, forecast_steps=3):
     dataset_path = download_dataset()
 
     print("🔁 Đọc dữ liệu gốc...")
@@ -87,7 +87,10 @@ def build_dataset(unique_id, window_size=60, batch_size=64, num_workers=2, pin_m
     scaler = MinMaxScaler()
     scaled_features = scaler.fit_transform(features)
 
-    full_dataset = TimeSeriesDataset(scaled_features, window_size)
+    if multi_step:
+        full_dataset = MultiStepDataset(scaled_features, window_size, forecast_steps)
+    else:
+        full_dataset = TimeSeriesDataset(scaled_features, window_size)
 
     total_len = len(full_dataset)
     train_size = int(0.7 * total_len)
